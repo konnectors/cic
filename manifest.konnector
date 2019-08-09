@@ -4,7 +4,7 @@
   "type": "konnector",
   "language": "node",
   "icon": "icon.png",
-  "slug": "cozy-konnector-bank-cic",
+  "slug": "cic",
   "source": "git@github.com:konnectors/cic.git",
   "editor": "Orandin",
   "vendor_link": "https://www.cic.fr",
