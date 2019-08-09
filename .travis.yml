@@ -1,0 +1,42 @@
+language: node_js
+node_js:
+- '8'
+env:
+  global:
+  - DEPLOY_REPOSITORY="git@github.com:konnectors/cic.git"
+  # REGISTRY_TOKEN(editor=cozy, app=cic)
+  - secure: ML1TDMpEpgCOhUTYd+UghaJ0wmGXymNMU2Xry7++xiEvhmj6ucoCBwujYrgVu2CXhpDXLmC9DCr6EOnJ9JOhqsMYrCQC7gR6XImQNCGaNGXUnbo/AXAbr/jAZSXd2A3jPmjDrI1hTcVSAWKFX2J8sxkQhaNmQkERWCKlBqYz+rRW1YF979+MmIXjTT4RkIR16MfU7WRzS9bfgvL+/o6HYT9R8PUj8r3uTiGW+Z38ZYOKbmraD9QaxNV6iwSb3yPbS3i+WKjYRNMhTACymSL8eNIrwpuHhEh6MNvWo7z8lOPnO5MS9GsHJO86NG/PGHnrg04O+uQtPcIrQ6UL8ix6299jHZf/ffwuk0oj2Ct6PXJkPhJnhesALbdVC+5W9Jb62g/MJkB8ealD8cgois27eOCBCmCRuaXcJXxeWiD7ljCYVLeJB3PIIJJoOVn2JLaKUxoHzqxcN1RhPvvBjohqbBsrmTos9VAG6YfgA6dxmf4dyuLh3Sa4HPRrOqO9OvQ4wFIoBqVYvJ9O6WJCPBhJAtLQWkFOvHAC0Tjvhs2LXAMbbOnupuqHBVZvDreW6v/aiJDTMIKzGFVDq//qbYJO26CN6b6WLAYZFwTkbzNbNAQsQC9s0eEgSHiUBGBDKuVGEViecHDoQBNPYL4Pw42iUMGP0pODZmav7A9oVhd3MDE=
+  # MATTERMOST_HOOK_URL
+  - secure: BE7xevRGrn+qZi8aII51rFXrXx8gp7Y90P7YrnB2oAzbxBruoTXNXMPSlmnDB8OoJyLqOcyHiPOO22qQNwkdzKk/ieMTE67RuXTs7uYx9YWV0Vt512GYd8IdsXG6Mwo/NmftVoJlqcjmUWPP7UKGm7lYOWA5EOHXZTqCQFVTQ8wmt2JOHSMuf91IToE8C1BCAv9uIg32cxqpbIM6D4hOBso03bU2t6I1hjIv2dQbTK63/ADradyWKwyLvplw0dOi3bw09tjSY9N3K3g1fN2xS4koV6SJah4Q3eu0sc8yPUwR/yUeB1A8EbEpIEmikHGxkP3DhhxTzDCWh14gXV+fUgQYQ3w6QwZgS5fQ4JL2rUZvqQ/jB+2sRTVtNtRmQ/4YMXd6txBmdR4RZpP5bKIcuinRuZ3GZOr4BpFAz5WJMzu6bEX7T21FKC/1c2hUHztpxWnQH+cZDHWXTXLLiKyTXwDVkcuuODW9fL91/zuWdVB4r5RIk+OlXKhcLo1aDiYlxONIp0T470iNc7FItw/JOoVlcpz2ZOobCHqtQ6qlJ+QmY1QSTD/H7cPhIOtnrp+mpKLLR2NONheweInsCRdoW+RUEPYsLW9RngYxsxzAr3zPKa/ZBxRW1xvh5WTLq28R9KGMij6a7pfe3RSeMRmXYZJ7fF3m5cvdPBlcoiYjPGY=
+cache:
+  yarn: true
+  directories:
+  - node_modules
+branches:
+  except:
+  - build
+  - build-debug
+script:
+- yarn lint
+- yarn build
+# - yarn run check
+deploy:
+- provider: script
+  skip-cleanup: true
+  script: DEPLOY_BRANCH=build yarn deploy && yarn cozyPublish --space selfhosted
+  on:
+    branch: master
+- provider: script
+  skip-cleanup: true
+  script: DEPLOY_BRANCH=build yarn deploy && yarn cozyPublish --space selfhosted --postpublish mattermost
+  on:
+    tags: true
+before_install:
+- openssl aes-256-cbc -K $encrypted_54480afc6f5a_key -iv $encrypted_54480afc6f5a_iv
+  -in github_deploy_key.enc -out /tmp/github_deploy_key -d
+- eval "$(ssh-agent -s)"
+- chmod 600 /tmp/github_deploy_key
+- ssh-add /tmp/github_deploy_key
+after_deploy:
+- rm /tmp/github_deploy_key
+- ssh-add -D
