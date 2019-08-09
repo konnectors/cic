@@ -1,12 +1,16 @@
 {
   "name": "CIC",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Crédit Industriel et Commercial (CIC)",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/konnectors/template.git"
   },
-  "keywords": ["cozy cloud", "konnector-bank", "cic"],
+  "keywords": [
+    "cozy cloud",
+    "konnector-bank",
+    "cic"
+  ],
   "author": "Simon Delberghe",
   "license": "AGPL-3.0",
   "main": "./src/index.js",
