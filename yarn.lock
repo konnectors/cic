@@ -360,7 +360,7 @@ are-we-there-yet@~1.1.2:
     delegates "^1.0.0"
     readable-stream "^2.0.6"
 
-argparse@^1.0.7:
+argparse@^1.0.10, argparse@^1.0.7:
   version "1.0.10"
   resolved "https://registry.yarnpkg.com/argparse/-/argparse-1.0.10.tgz#bcd6791ea5ae09725e17e5ad988134cd40b3d911"
   dependencies:
@@ -955,13 +955,13 @@ combined-stream@^1.0.6, combined-stream@~1.0.6:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@2.19.0, commander@^2.19.0:
-  version "2.19.0"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-2.19.0.tgz#f6198aa84e5b83c46054b94ddedbfed5ee9ff12a"
-
 commander@2.20.0, commander@^2.16.0:
   version "2.20.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.0.tgz#d58bb2b5c1ee8f87b0d340027e9e94e222c5a422"
+
+commander@^2.19.0:
+  version "2.19.0"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-2.19.0.tgz#f6198aa84e5b83c46054b94ddedbfed5ee9ff12a"
 
 commander@~2.14.1:
   version "2.14.1"
@@ -1090,15 +1090,15 @@ cosmiconfig@^5.0.7:
     lodash.get "^4.4.2"
     parse-json "^4.0.0"
 
-cozy-app-publish@0.15.0:
-  version "0.15.0"
-  resolved "https://registry.yarnpkg.com/cozy-app-publish/-/cozy-app-publish-0.15.0.tgz#25562e00814a8759e1927c56ee050cd357453d9a"
+cozy-app-publish@0.16.4:
+  version "0.16.4"
+  resolved "https://registry.yarnpkg.com/cozy-app-publish/-/cozy-app-publish-0.16.4.tgz#ca34c40e7338eb9e620a7e7a1949e5cee98f260f"
   dependencies:
+    argparse "^1.0.10"
     chalk "2.4.2"
-    commander "2.19.0"
     cross-spawn "6.0.5"
     fs-extra "7.0.1"
-    lodash "4.17.11"
+    lodash "4.17.15"
     node-fetch "2.3.0"
     prompt "1.0.0"
     request "2.88.0"
