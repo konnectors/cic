@@ -46,7 +46,7 @@
   "dependencies": {
     "cozy-konnector-libs": "4.15.3",
     "moment": "2.24.0",
-    "xlsx": "0.14.2"
+    "xlsx": "0.15.0"
   },
   "devDependencies": {
     "copy-webpack-plugin": "5.0.4",
