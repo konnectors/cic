@@ -61,10 +61,7 @@
       "type": "io.cozy.bank.operations"
     },
     "accounts": {
-      "type": "io.cozy.accounts",
-      "verbs": [
-        "GET"
-      ]
+      "type": "io.cozy.accounts"
     },
     "bank.balancehistories": {
       "type": "io.cozy.bank.balancehistories"
