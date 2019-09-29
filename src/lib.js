@@ -8,9 +8,12 @@ const {
 } = require('cozy-konnector-libs')
 const groupBy = require('lodash/groupBy')
 const omit = require('lodash/omit')
+const pick = require('lodash/pick')
 const moment = require('moment')
 const xlsx = require('xlsx')
 const cheerio = require('cheerio')
+const { CookieJar } = require('tough-cookie')
+const JAR_ACCOUNT_KEY = 'cookie_twofactor'
 
 const helpers = require('./helpers')
 
@@ -25,18 +28,24 @@ const {
 let baseUrl = 'https://www.cic.fr/'
 let urlLogin = ''
 let urlDownload = ''
+let url2FA = ''
+let urlOTP = ''
+let urlOTPValidation = ''
 
 BankAccount.registerClient(cozyClient)
 BalanceHistory.registerClient(cozyClient)
+
+let jar = requestFactory().jar()
 
 const reconciliator = new BankingReconciliator({ BankAccount, BankTransaction })
 const request = requestFactory({
   cheerio: true,
   json: false,
-  jar: true
+  jar: jar
 })
 
 let lib
+let self
 
 /**
  * The start function is run by the BaseKonnector instance only when it got all the account
@@ -46,6 +55,7 @@ let lib
  */
 async function start(fields) {
   log('info', 'Build urls')
+  self = this
 
   if (!fields.language) {
     throw new Error('Missing fields.language...')
@@ -54,6 +64,10 @@ async function start(fields) {
   baseUrl += fields.language + '/'
   log('info', baseUrl, 'Base url')
 
+  url2FA = baseUrl + 'banque/validation.aspx'
+  urlOTP = baseUrl + 'otp/SOSD_OTP_GetTransactionState.htm'
+  urlOTPValidation =
+    baseUrl + 'banque/validation.aspx?_tabi=C&_pid=OtpValidationPage'
   urlLogin = baseUrl + 'authentification.html'
   urlDownload =
     baseUrl +
@@ -61,12 +75,28 @@ async function start(fields) {
 
   // ---
 
+  // Get 2FA token from account data
+  const accountData = this.getAccountData()
+  let auth2FAToken = null
+  if (accountData && accountData.auth && accountData.auth[JAR_ACCOUNT_KEY]) {
+    auth2FAToken = JSON.parse(accountData.auth[JAR_ACCOUNT_KEY])
+  }
+
+  if (auth2FAToken) {
+    log('info', 'found saved 2FA token, using it...')
+    jar._jar = CookieJar.fromJSON(auth2FAToken)
+  }
+
+  // ---
+
   log('info', 'Authenticating ...')
+  this.deactivateAutoSuccessfulLogin()
   let is_auth = await authenticate(fields.login, fields.password)
   if (!is_auth) {
     throw new Error(errors.LOGIN_FAILED)
   }
   log('info', 'Successfully logged in')
+  await this.notifySuccessfulLogin()
 
   log(
     'info',
@@ -129,7 +159,7 @@ function authenticate(user, password) {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     },
-    // HACK: Form option doesn't correctly encode values.
+    // HACK: Form option doesn't.html correctly encode values.
     body:
       '_cm_user=' + escape(user) + '&flag=password&_cm_pwd=' + escape(password),
     transform: (body, response) => [
@@ -139,7 +169,10 @@ function authenticate(user, password) {
     ]
   })
     .then(([statusCode, $, fullResponse]) => {
-      if (fullResponse.request.uri.href === urlLogin) {
+      if (fullResponse.request.uri.href === url2FA) {
+        log('info', 'Two factor authentication required')
+        return twoFactorAuthentication($)
+      } else if (fullResponse.request.uri.href === urlLogin) {
         log(
           'error',
           statusCode + ' ' + $('.blocmsg.err').text(),
@@ -160,6 +193,116 @@ function authenticate(user, password) {
 }
 
 /**
+ * This function handles the two factor authentication challenge implemented with DSP2 directive.
+ *
+ * An user action is required to validate the authentication. That's why this function
+ * watchs every 5 seconds if the user has validated the connection. If so, the cookie will
+ * save for future authentication.
+ *
+ * @param {object} $
+ * @param {object} fullResponse
+ * @returns {boolean} Returns true if authentication is successful, else false
+ * @throws {Error} When the website is down or an HTTP error has occurred
+ */
+async function twoFactorAuthentication($) {
+  let textScripts = ''
+  let fields = {}
+  let inputs = $('input')
+  let scripts = $('.OTPDeliveryChannelText script:not([src])')
+  let regex = /transactionId:\s+'(.+?)',/im
+
+  inputs.each((index, element) => {
+    let name = $(element).attr('name')
+    if (name !== undefined) {
+      fields[name] = $(element).val()
+    }
+  })
+
+  fields = pick(fields, ['otp_hidden', '_wxf2_cc'])
+  fields['_FID_DoValidate.x'] = 0
+  fields['_FID_DoValidate.y'] = 0
+
+  scripts.each((index, element) => (textScripts += $(element).html()))
+
+  let matches = regex.exec(textScripts)
+
+  if (matches.length < 1) {
+    // transactionId not found
+    return false
+  }
+
+  let timeout = 15000 // Wait 15s before the first checking
+  let transactionID = matches[1]
+
+  // 60 * 5 = 300s (5 min)
+  for (let t = 0; t < 60; t++) {
+    log(
+      'info',
+      'Wait few seconds before to check if the two factor challenge has been validated'
+    )
+
+    // Wait 5 seconds
+    await new Promise(done => setTimeout(done, timeout))
+    timeout = 5000 // For the next try, wait just 5 seconds
+
+    let authenticated = await request({
+      uri: urlOTP,
+      method: 'POST',
+      form: {
+        transactionId: transactionID
+      },
+      transform: body => cheerio.load(body)
+    }).then(async function($) {
+      let transactionState = $('transactionState').text()
+      log('info', 'Status of 2FA challenge : ' + transactionState)
+
+      if (
+        transactionState === 'VALIDATED' ||
+        transactionState === 'validated'
+      ) {
+        return await validationOTP(fields)
+      }
+      return false
+    })
+
+    if (authenticated) {
+      return true
+    }
+  }
+
+  return false
+}
+
+function validationOTP(fields) {
+  return request({
+    uri: urlOTPValidation,
+    method: 'POST',
+    form: fields
+  }).then(() => {
+    saveCookies()
+    return true
+  })
+}
+
+async function saveCookies() {
+  if (process.env.NODE_ENV === 'development') {
+    log('info', "can't save cookies in DEV mode")
+    return
+  }
+
+  let cookies = jar._jar.toJSON()
+  cookies.cookies = cookies.cookies.filter(
+    obj => obj.key == 'auth_client_state'
+  )
+
+  const data = self.getAccountData()
+  const accountData = { ...data, auth: {} }
+  accountData.auth[JAR_ACCOUNT_KEY] = JSON.stringify(cookies)
+  await self.saveAccountData(accountData)
+  log('info', 'saved the session')
+}
+
+/**
  * Downloads an Excel file containing all bank accounts and recent transactions
  * on each bank accounts.
  *
@@ -170,7 +313,7 @@ async function downloadExcelWithBankInformation() {
   const rq = requestFactory({
     cheerio: false,
     gzip: false,
-    jar: true
+    jar: jar
   })
 
   return rq({
@@ -333,8 +476,8 @@ function parseOperations(account, operationLines) {
  * Retrieves the balance history for one year and an account. If no balance history is found,
  * this function returns an empty document based on {@link https://docs.cozy.io/en/cozy-doctypes/docs/io.cozy.bank/#iocozybankbalancehistories|io.cozy.bank.balancehistories} doctype.
  * <br><br>
- * Note: Can't use <code>BalanceHistory.getByYearAndAccount()</code> directly for the moment,
- * because <code>BalanceHistory</code> invokes <code>Document</code> that doesn't have an cozyClient instance.
+ * Note: Can't.html use <code>BalanceHistory.getByYearAndAccount()</code> directly for the moment,
+ * because <code>BalanceHistory</code> invokes <code>Document</code> that doesn't.html have an cozyClient instance.
  *
  * @param {integer} year
  * @param {string} accountId
