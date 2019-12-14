@@ -81,16 +81,50 @@ async function start(fields) {
 
   // ---
 
-  // Get 2FA token from account data
-  const accountData = this.getAccountData()
   let auth2FAToken = null
-  if (accountData && accountData.auth && accountData.auth[JAR_ACCOUNT_KEY]) {
-    auth2FAToken = JSON.parse(accountData.auth[JAR_ACCOUNT_KEY])
-  }
 
-  if (auth2FAToken) {
-    log('info', 'found saved 2FA token, using it...')
-    jar._jar = CookieJar.fromJSON(auth2FAToken)
+  const accountData = this.getAccountData()
+  if (accountData) {
+    let now = moment()
+
+    // Check sync period
+    if (accountData.lastSync && fields['sync.period'] !== '1') {
+      let nextSync = moment(accountData.lastSync).add(
+        fields['sync.period'],
+        'hour'
+      )
+      nextSync.set({ minute: 0, second: 0, millisecond: 0 })
+
+      if (now.isBefore(nextSync)) {
+        return // stop execution
+      }
+    }
+
+    // Check night period
+    if (fields['sync.nightPeriod.noSync']) {
+      let hour = now.hour()
+
+      // Night period = not (day period)
+      if (
+        !(
+          hour < fields['sync.nightPeriod.begin'] &&
+          fields['sync.nightPeriod.end'] <= hour
+        )
+      ) {
+        log('info', 'No sync during night period.')
+        return // stop execution
+      }
+    }
+
+    // Get 2FA token from account data
+    if (accountData.auth && accountData.auth[JAR_ACCOUNT_KEY]) {
+      auth2FAToken = JSON.parse(accountData.auth[JAR_ACCOUNT_KEY])
+    }
+
+    if (auth2FAToken) {
+      log('info', 'found saved 2FA token, using it...')
+      jar._jar = CookieJar.fromJSON(auth2FAToken)
+    }
   }
 
   // ---

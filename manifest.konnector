@@ -41,6 +41,55 @@
     "password": {
       "type": "password"
     },
+    "sync.period": {
+      "advanced": true,
+      "type": "dropdown",
+      "default": { "name": "heures / hour", "value": "1" },
+      "options": [
+        { "name": "heures / hour", "value": "1" },
+        { "name": "2 heures / 2 hours", "value": "2" },
+        { "name": "3 heures / 3 hours", "value": "3" },
+        { "name": "4 heures / 4 hours", "value": "4" },
+        { "name": "6 heures / 6 hours", "value": "6" },
+        { "name": "8 heures / 8 hours", "value": "8" },
+        { "name": "12 heures / 12 hours", "value": "12" },
+        { "name": "jours / day", "value": "24" },
+        { "name": "2 jours / 2 days", "value": "48" },
+        { "name": "3 jours / 3 days", "value": "72" },
+        { "name": "4 jours / 4 days", "value": "96" },
+        { "name": "5 jours / 5 days", "value": "120" },
+        { "name": "6 jours / 6 days", "value": "144" },
+        { "name": "semaines / week", "value": "168" }
+      ]
+    },
+    "sync.nightPeriod.noSync": {
+      "advanced": true,
+      "type": "checkbox"
+    },
+    "sync.nightPeriod.begin": {
+      "advanced": true,
+      "type": "dropdown",
+      "default": { "name": "23:00 / 11.00 PM", "value": "23:00:00" },
+      "options": [
+        { "name": "21:00 / 09.00 PM", "value": "21" },
+        { "name": "22:00 / 10.00 PM", "value": "22" },
+        { "name": "23:00 / 11.00 PM", "value": "23" },
+        { "name": "00:00 / 12.00 AM", "value": "0" },
+        { "name": "01:00 / 01.00 AM", "value": "1" }
+      ]
+    },
+    "sync.nightPeriod.end": {
+      "advanced": true,
+      "type": "dropdown",
+      "default": { "name": "06:00 / 06.00 AM", "value": "06:00:00" },
+      "options": [
+        { "name": "05:00 / 05.00 AM", "value": "5" },
+        { "name": "06:00 / 06.00 AM", "value": "6" },
+        { "name": "07:00 / 07.00 AM", "value": "7" },
+        { "name": "08:00 / 08.00 AM", "value": "8" },
+        { "name": "09:00 / 09.00 AM", "value": "9" }
+      ]
+    },
     "advancedFields": {
       "folderPath": {
         "advanced": true,
@@ -98,6 +147,20 @@
         "files": {
           "description": "Utilisé pour enregistrer les extraits de compte"
         }
+      },
+      "fields": {
+        "sync.period": {
+          "label": "Synchroniser les données tou(te)s les"
+        },
+        "sync.nightPeriod.noSync": {
+          "label": "Empêcher la synchronisation durant la nuit"
+        },
+        "sync.nightPeriod.begin": {
+          "label": "Heure à laquelle débute la nuit"
+        },
+        "sync.nightPeriod.end": {
+          "label": "Heure à laquelle se termine la nuit"
+        }
       }
     },
     "en": {
@@ -118,6 +181,20 @@
         },
         "files": {
           "description": "Required to save the account statements"
+        }
+      },
+      "fields": {
+        "sync.period": {
+          "label": "Synchronize the data every"
+        },
+        "sync.nightPeriod.noSync": {
+          "label": "No sync during the night"
+        },
+        "sync.nightPeriod.begin": {
+          "label": "Start time of the night"
+        },
+        "sync.nightPeriod.end": {
+          "label": "End time of the night"
         }
       }
     }
