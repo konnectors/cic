@@ -31,6 +31,9 @@ let urlDownload = ''
 let url2FA = ''
 let urlOTP = ''
 let urlOTPValidation = ''
+let pathConfirmIdentify =
+  '/banque/validation.aspx?_tabi=C&_pid=AuthChoicePage&_fid=SCA'
+let url2FAConfirmIdentity = ''
 
 BankAccount.registerClient(cozyClient)
 BalanceHistory.registerClient(cozyClient)
@@ -60,6 +63,9 @@ async function start(fields) {
   if (!fields.language) {
     throw new Error('Missing fields.language...')
   }
+
+  pathConfirmIdentify = fields.language + pathConfirmIdentify
+  url2FAConfirmIdentity = baseUrl + pathConfirmIdentify
 
   baseUrl += fields.language + '/'
   log('info', baseUrl, 'Base url')
@@ -207,6 +213,16 @@ function authenticate(user, password) {
 async function twoFactorAuthentication($) {
   let textScripts = ''
   let fields = {}
+
+  // Check if the website asks to confirm our identity
+  let askConfirmIdentity = $('a[href="/' + pathConfirmIdentify + '"]')
+
+  if (askConfirmIdentity.length) {
+    log('info', 'The website asks to confirm the identity')
+    // eslint-disable-next-line require-atomic-updates
+    $ = await confirmIdentify()
+  }
+
   let inputs = $('input')
   let scripts = $('.OTPDeliveryChannelText script:not([src])')
   let regex = /transactionId:\s+'(.+?)',/im
@@ -281,6 +297,16 @@ function validationOTP(fields) {
   }).then(() => {
     saveCookies()
     return true
+  })
+}
+
+async function confirmIdentify() {
+  return await request({
+    uri: url2FAConfirmIdentity,
+    method: 'GET',
+    transform: body => cheerio.load(body)
+  }).then(function($) {
+    return $
   })
 }
 
