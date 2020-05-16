@@ -25,12 +25,12 @@ const {
   BankingReconciliator
 } = doctypes
 
-let baseUrl = 'https://www.cic.fr/'
+let base = 'https://www.cic.fr/'
+let baseUrl = base
 let urlLogin = ''
 let urlDownload = ''
 let url2FA = ''
 let urlOTP = ''
-let urlOTPValidation = ''
 let pathConfirmIdentify =
   '/banque/validation.aspx?_tabi=C&_pid=AuthChoicePage&_fid=SCA'
 let url2FAConfirmIdentity = ''
@@ -72,8 +72,6 @@ async function start(fields) {
 
   url2FA = baseUrl + 'banque/validation.aspx'
   urlOTP = baseUrl + 'otp/SOSD_OTP_GetTransactionState.htm'
-  urlOTPValidation =
-    baseUrl + 'banque/validation.aspx?_tabi=C&_pid=OtpValidationPage'
   urlLogin = baseUrl + 'authentification.html'
   urlDownload =
     baseUrl +
@@ -223,6 +221,17 @@ async function twoFactorAuthentication($) {
     $ = await confirmIdentify()
   }
 
+  // Get URL OTP validation from form, because the url contains a token
+  let urlOTPValidation = ''
+
+  let form = $('form')
+  form.each((index, element) => {
+    let action = $(element).attr('action')
+    if (action.includes('validation.aspx')) {
+      urlOTPValidation = base + action
+    }
+  })
+
   let inputs = $('input')
   let scripts = $('.OTPDeliveryChannelText script:not([src])')
   let regex = /transactionId:\s+'(.+?)',/im
@@ -276,7 +285,7 @@ async function twoFactorAuthentication($) {
         transactionState === 'VALIDATED' ||
         transactionState === 'validated'
       ) {
-        return await validationOTP(fields)
+        return await validationOTP(urlOTPValidation, fields)
       }
       return false
     })
@@ -289,7 +298,7 @@ async function twoFactorAuthentication($) {
   return false
 }
 
-function validationOTP(fields) {
+function validationOTP(urlOTPValidation, fields) {
   return request({
     uri: urlOTPValidation,
     method: 'POST',
