@@ -27,6 +27,7 @@ const {
 
 let base = 'https://www.cic.fr/'
 let baseUrl = base
+let urlHome = ''
 let urlLogin = ''
 let urlDownload = ''
 let url2FA = ''
@@ -70,6 +71,7 @@ async function start(fields) {
   baseUrl += fields.language + '/'
   log('info', baseUrl, 'Base url')
 
+  urlHome = baseUrl + 'banque/pageaccueil.html'
   url2FA = baseUrl + 'banque/validation.aspx'
   urlOTP = baseUrl + 'otp/SOSD_OTP_GetTransactionState.htm'
   urlLogin = baseUrl + 'authentification.html'
@@ -187,6 +189,10 @@ function authenticate(user, password) {
       return true
     })
     .catch(err => {
+      if (err.message === errors.USER_ACTION_NEEDED) {
+        throw err
+      }
+
       if (err.statusCode >= 500) {
         throw new Error(errors.VENDOR_DOWN)
       } else {
@@ -302,9 +308,18 @@ function validationOTP(urlOTPValidation, fields) {
   return request({
     uri: urlOTPValidation,
     method: 'POST',
-    form: fields
-  }).then(() => {
+    form: fields,
+    transform: (body, response) => [
+      response
+    ]
+  }).then(([fullResponse]) => {
     saveCookies()
+
+    if (fullResponse.request.uri.href !== urlHome) {
+      // If the URI is different to urlHome, that means there is probably a user action
+      throw new Error(errors.USER_ACTION_NEEDED)
+    }
+
     return true
   })
 }
