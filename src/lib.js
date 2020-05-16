@@ -16,6 +16,7 @@ const { CookieJar } = require('tough-cookie')
 const JAR_ACCOUNT_KEY = 'cookie_twofactor'
 
 const helpers = require('./helpers')
+const BankUrl = require('./urlBuilder')
 
 const doctypes = require('cozy-doctypes')
 const {
@@ -24,17 +25,6 @@ const {
   BalanceHistory,
   BankingReconciliator
 } = doctypes
-
-let base = 'https://www.cic.fr/'
-let baseUrl = base
-let urlHome = ''
-let urlLogin = ''
-let urlDownload = ''
-let url2FA = ''
-let urlOTP = ''
-let pathConfirmIdentify =
-  '/banque/validation.aspx?_tabi=C&_pid=AuthChoicePage&_fid=SCA'
-let url2FAConfirmIdentity = ''
 
 BankAccount.registerClient(cozyClient)
 BalanceHistory.registerClient(cozyClient)
@@ -66,19 +56,9 @@ async function start(fields) {
     throw new Error('Missing fields.language...')
   }
 
-  pathConfirmIdentify = fields.language + pathConfirmIdentify
-  url2FAConfirmIdentity = baseUrl + pathConfirmIdentify
+  BankUrl.setLanguage(fields.language)
 
-  baseUrl += fields.language + '/'
-  log('info', baseUrl, 'Base url')
-
-  urlHome = baseUrl + 'banque/pageaccueil.html'
-  url2FA = baseUrl + 'banque/validation.aspx'
-  urlOTP = baseUrl + 'otp/SOSD_OTP_GetTransactionState.htm'
-  urlLogin = baseUrl + 'authentification.html'
-  urlDownload =
-    baseUrl +
-    'banque/compte/routetelechargement.asp?formatTelechargement=XL&compte=all'
+  log('info', BankUrl.getHost(), 'Base url')
 
   // ---
 
@@ -161,7 +141,7 @@ async function start(fields) {
  */
 function authenticate(user, password) {
   return request({
-    uri: urlLogin,
+    uri: BankUrl.get('auth'),
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
@@ -176,10 +156,10 @@ function authenticate(user, password) {
     ]
   })
     .then(([statusCode, $, fullResponse]) => {
-      if (fullResponse.request.uri.href === url2FA) {
+      if (fullResponse.request.uri.href === BankUrl.get('auth2FA')) {
         log('info', 'Two factor authentication required')
         return twoFactorAuthentication($)
-      } else if (fullResponse.request.uri.href === urlLogin) {
+      } else if (fullResponse.request.uri.href === BankUrl.get('auth')) {
         log(
           'error',
           statusCode + ' ' + $('.blocmsg.err').text(),
@@ -220,7 +200,9 @@ async function twoFactorAuthentication($) {
   let fields = {}
 
   // Check if the website asks to confirm our identity
-  let askConfirmIdentity = $('a[href="/' + pathConfirmIdentify + '"]')
+  let askConfirmIdentity = $(
+    'a[href="/' + BankUrl.get('authConfirmIdentity') + '"]'
+  )
 
   if (askConfirmIdentity.length) {
     log('info', 'The website asks to confirm the identity')
@@ -235,7 +217,7 @@ async function twoFactorAuthentication($) {
   form.each((index, element) => {
     let action = $(element).attr('action')
     if (action.includes('validation.aspx')) {
-      urlOTPValidation = base + action
+      urlOTPValidation = BankUrl.getBaseUrl() + action
     }
   })
 
@@ -278,7 +260,7 @@ async function twoFactorAuthentication($) {
     timeout = 5000 // For the next try, wait just 5 seconds
 
     let authenticated = await request({
-      uri: urlOTP,
+      uri: BankUrl.get('authOTP'),
       method: 'POST',
       form: {
         transactionId: transactionID
@@ -316,7 +298,7 @@ function validationOTP(urlOTPValidation, fields) {
   }).then(([fullResponse]) => {
     saveCookies()
 
-    if (fullResponse.request.uri.href !== urlHome) {
+    if (fullResponse.request.uri.href !== BankUrl.get('home')) {
       // If the URI is different to urlHome, that means there is probably a user action
       throw new Error(errors.USER_ACTION_NEEDED)
     }
@@ -327,7 +309,7 @@ function validationOTP(urlOTPValidation, fields) {
 
 async function confirmIdentify() {
   return await request({
-    uri: url2FAConfirmIdentity,
+    uri: BankUrl.get('authConfirmIdentity'),
     method: 'GET',
     transform: body => cheerio.load(body)
   }).then(function($) {
@@ -363,7 +345,7 @@ async function downloadExcelWithBankInformation() {
   })
 
   return rq({
-    uri: urlDownload,
+    uri: BankUrl.get('xlsxDownload'),
     encoding: 'binary'
   }).then(body => {
     return body.Sheets ? body : xlsx.read(body, { type: 'binary' })
