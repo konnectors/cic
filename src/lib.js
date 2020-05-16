@@ -335,11 +335,6 @@ async function confirmIdentify() {
 }
 
 async function saveCookies() {
-  if (process.env.NODE_ENV === 'development') {
-    log('info', "can't save cookies in DEV mode")
-    return
-  }
-
   let cookies = jar._jar.toJSON()
   cookies.cookies = cookies.cookies.filter(
     obj => obj.key == 'auth_client_state'

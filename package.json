@@ -30,7 +30,7 @@
   },
   "scripts": {
     "start": "node ./src/index.js",
-    "dev": "cozy-konnector-dev",
+    "dev": "cozy-konnector-dev -a",
     "standalone": "cozy-konnector-standalone",
     "pretest": "npm run clean",
     "docs": "jsdoc -c .jsdoc_config.json",
