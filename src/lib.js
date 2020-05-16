@@ -38,6 +38,7 @@ let url2FAConfirmIdentity = ''
 
 BankAccount.registerClient(cozyClient)
 BalanceHistory.registerClient(cozyClient)
+BankTransaction.registerClient(cozyClient)
 
 let jar = requestFactory().jar()
 
