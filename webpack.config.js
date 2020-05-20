@@ -36,14 +36,16 @@ module.exports = {
     filename: 'index.js'
   },
   plugins: [
-    new CopyPlugin([
-      { from: 'manifest.konnector' },
-      { from: 'package.json' },
-      { from: 'README.md' },
-      { from: 'assets', transform: optimizeSVGIcon },
-      { from: '.travis.yml' },
-      { from: 'LICENSE' }
-    ]),
+    new CopyPlugin({
+      patterns: [
+        { from: 'manifest.konnector' },
+        { from: 'package.json' },
+        { from: 'README.md' },
+        { from: 'assets', transform: optimizeSVGIcon },
+        { from: '.travis.yml' },
+        { from: 'LICENSE' }
+      ]
+    }),
     new webpack.DefinePlugin({
       __WEBPACK_PROVIDED_MANIFEST__: JSON.stringify(readManifest())
     })
@@ -52,7 +54,7 @@ module.exports = {
     // to ignore the warnings like :
     // WARNING in ../libs/node_modules/bindings/bindings.js 76:22-40
     // Critical dependency: the request of a dependency is an expression
-    // Since we cannot change this dependency. I think it won't.html hide more important messages
+    // Since we cannot change this dependency. I think it won't hide more important messages
     exprContextCritical: false
   }
 }
