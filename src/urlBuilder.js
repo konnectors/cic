@@ -1,9 +1,8 @@
-const log = require('cozy-logger').namespace('CIC/URLBuilder');
+const log = require('cozy-logger').namespace('CIC/URLBuilder')
 
 const baseUrl = 'https://www.cic.fr/'
 
 const basePathAuth = 'banque/validation.aspx'
-const basePathDocument = 'banque/documentinternet.html'
 
 const paths = {
   home: `banque/pageaccueil.html`,

@@ -292,9 +292,7 @@ function validationOTP(urlOTPValidation, fields) {
     uri: urlOTPValidation,
     method: 'POST',
     form: fields,
-    transform: (body, response) => [
-      response
-    ]
+    transform: (body, response) => [response]
   }).then(([fullResponse]) => {
     saveCookies()
 
