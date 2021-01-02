@@ -165,9 +165,6 @@ function authenticate(user, password) {
         // Redirect to 2FA
         case BankUrl.get('auth2FA'):
           log('info', 'Two factor authentication required')
-          if (!this.TWO_FACTOR_ENABLED) {
-            throw new Error(errors.CHALLENGE_ASKED)
-          }
           return twoFactorAuthentication($)
 
         // Redirect to same page (auth)
