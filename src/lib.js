@@ -64,10 +64,7 @@ async function start(fields) {
 
   // Get 2FA token from account data
   const accountData = this.getAccountData()
-  let auth2FAToken = null
-  if (accountData && accountData.auth && accountData.auth[JAR_ACCOUNT_KEY]) {
-    auth2FAToken = JSON.parse(accountData.auth[JAR_ACCOUNT_KEY])
-  }
+  let auth2FAToken = getTwoFactorCookie(accountData)
 
   if (auth2FAToken) {
     log('info', 'found saved 2FA token, using it...')
@@ -131,6 +128,13 @@ async function start(fields) {
 
 // ============
 
+function getTwoFactorCookie(accountData) {
+  if (accountData && accountData.auth && accountData.auth[JAR_ACCOUNT_KEY]) {
+    return JSON.parse(accountData.auth[JAR_ACCOUNT_KEY])
+  }
+  return null
+}
+
 /**
  * This function initiates a connection on the CIC website.
  *
@@ -156,30 +160,40 @@ function authenticate(user, password) {
     ]
   })
     .then(([statusCode, $, fullResponse]) => {
-      if (fullResponse.request.uri.href === BankUrl.get('auth2FA')) {
-        log('info', 'Two factor authentication required')
-        return twoFactorAuthentication($)
-      } else if (fullResponse.request.uri.href === BankUrl.get('auth')) {
-        log(
-          'error',
-          statusCode + ' ' + $('.blocmsg.err').text(),
-          errors.LOGIN_FAILED
-        )
-        return false
-      }
-      return true
-    })
-    .catch(err => {
-      if (err.message === errors.USER_ACTION_NEEDED) {
-        throw err
+      let currentUrl = fullResponse.request.uri.href
+      switch (currentUrl) {
+        // Redirect to 2FA
+        case BankUrl.get('auth2FA'):
+          log('info', 'Two factor authentication required')
+          if (!this.TWO_FACTOR_ENABLED) {
+            throw new Error(errors.CHALLENGE_ASKED)
+          }
+          return twoFactorAuthentication($)
+
+        // Redirect to same page (auth)
+        case BankUrl.get('auth'):
+          log(
+            'error',
+            statusCode + ' ' + $('.blocmsg.err').text(),
+            errors.LOGIN_FAILED
+          )
+          throw new Error(errors.LOGIN_FAILED)
+
+        // Redirect to home page
+        case BankUrl.get('home'):
+          log('debug', 'Redirected to home page')
+          return true
       }
 
-      if (err.statusCode >= 500) {
+      log('error', 'Redirected to ' + currentUrl + ' instead of home page')
+      throw new Error(errors.USER_ACTION_NEEDED)
+    })
+    .catch(err => {
+      if (err.statusCode && err.statusCode >= 500) {
         throw new Error(errors.VENDOR_DOWN)
-      } else {
-        log('error', errors.LOGIN_FAILED, err.statusCode)
-        throw new Error(errors.LOGIN_FAILED)
       }
+
+      throw err
     })
 }
 
@@ -187,7 +201,7 @@ function authenticate(user, password) {
  * This function handles the two factor authentication challenge implemented with DSP2 directive.
  *
  * An user action is required to validate the authentication. That's why this function
- * watchs every 5 seconds if the user has validated the connection. If so, the cookie will
+ * watchs every 5 seconds if the user has validated the connection. If so, the twoFactorCookie will
  * save for future authentication.
  *
  * @param {object} $
@@ -208,6 +222,8 @@ async function twoFactorAuthentication($) {
     log('info', 'The website asks to confirm the identity')
     // eslint-disable-next-line require-atomic-updates
     $ = await confirmIdentify()
+    log('debug', 'Set two factor authentication state')
+    await this.setTwoFAState({ type: 'app' })
   }
 
   // Get URL OTP validation from form, because the url contains a token
@@ -280,6 +296,8 @@ async function twoFactorAuthentication($) {
     })
 
     if (authenticated) {
+      log('debug', 'reset two factor authentication state')
+      await this.resetTwoFAState()
       return true
     }
   }
