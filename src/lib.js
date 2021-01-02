@@ -219,8 +219,6 @@ async function twoFactorAuthentication($) {
     log('info', 'The website asks to confirm the identity')
     // eslint-disable-next-line require-atomic-updates
     $ = await confirmIdentify()
-    log('debug', 'Set two factor authentication state')
-    await this.setTwoFAState({ type: 'app' })
   }
 
   // Get URL OTP validation from form, because the url contains a token
@@ -293,8 +291,6 @@ async function twoFactorAuthentication($) {
     })
 
     if (authenticated) {
-      log('debug', 'reset two factor authentication state')
-      await this.resetTwoFAState()
       return true
     }
   }
