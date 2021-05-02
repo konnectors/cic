@@ -307,7 +307,10 @@ function validationOTP(urlOTPValidation, fields) {
   }).then(([fullResponse]) => {
     saveCookies()
 
-    if (fullResponse.request.uri.href !== BankUrl.get('home')) {
+    let uri = fullResponse.request.uri
+
+    // Add query part (uri.search) from uri to check the target page and avoid false negative
+    if (uri.href !== (BankUrl.get('home') + uri.search) ) {
       // If the URI is different to urlHome, that means there is probably a user action
       throw new Error(errors.USER_ACTION_NEEDED)
     }
