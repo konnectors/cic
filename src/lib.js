@@ -178,6 +178,7 @@ function authenticate(user, password) {
 
         // Redirect to home page
         case BankUrl.get('home'):
+        case BankUrl.get('home') + fullResponse.request.uri.search:
           log('debug', 'Redirected to home page')
           return true
       }
