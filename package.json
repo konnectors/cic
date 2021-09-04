@@ -1,6 +1,6 @@
 {
   "name": "CIC",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "description": "Crédit Industriel et Commercial (CIC)",
   "repository": {
     "type": "git",
@@ -46,14 +46,14 @@
     "travisDeployKey": "./bin/generate_travis_deploy_key"
   },
   "dependencies": {
-    "cozy-doctypes": "1.82.2",
-    "cozy-konnector-libs": "4.42.1",
+    "cozy-doctypes": "1.82.3",
+    "cozy-konnector-libs": "4.42.2",
     "moment": "2.29.1",
     "xlsx": "0.17.0"
   },
   "devDependencies": {
-    "cozy-jobs-cli": "1.16.1",
-    "cozy-konnector-build": "1.2.1",
+    "cozy-jobs-cli": "1.16.2",
+    "cozy-konnector-build": "1.2.2",
     "jsdoc": "3.6.6"
   }
 }
