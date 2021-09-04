@@ -1235,7 +1235,18 @@ cozy-device-helper@^1.12.0:
   dependencies:
     lodash "^4.17.19"
 
-cozy-doctypes@1.82.2, cozy-doctypes@^1.82.2:
+cozy-doctypes@1.82.3:
+  version "1.82.3"
+  resolved "https://registry.yarnpkg.com/cozy-doctypes/-/cozy-doctypes-1.82.3.tgz#e8e759c7698fb2718a35c06e46b24c000a2b3cd4"
+  integrity sha512-u2WRc2tD8SdR9MMFN49cAk7Wl5d11JgypBNzmrjXrziFUA5dTK3dTxJFA+tGlTfZSjJ+dfwuMYvZFf/iIg0Q4w==
+  dependencies:
+    cozy-logger "^1.7.0"
+    date-fns "^1.30.1"
+    es6-promise-pool "^2.5.0"
+    lodash "^4.17.19"
+    prop-types "^15.7.2"
+
+cozy-doctypes@^1.82.2:
   version "1.82.2"
   resolved "https://registry.yarnpkg.com/cozy-doctypes/-/cozy-doctypes-1.82.2.tgz#7c7d6f44e3aaee18ba51253468e84d2d1a70fde6"
   integrity sha512-NWbQ6rKj2a+Rq19MX9uNa8GNlzwdlye9pxiC1V3jd+76T5fQMQN+tjHr9jK468V/NJvC/oQowAcWsRoMaB5A+Q==
@@ -1253,29 +1264,30 @@ cozy-flags@2.7.1:
   dependencies:
     microee "^0.0.6"
 
-cozy-jobs-cli@1.16.1:
-  version "1.16.1"
-  resolved "https://registry.yarnpkg.com/cozy-jobs-cli/-/cozy-jobs-cli-1.16.1.tgz#0441c2ff7d77c15d6a0826c775c18b13416018d3"
-  integrity sha512-cCpC3nX4rIN5nzr4CSr9UL3yVi2Gm0dvRCyZdievwAk8tmu4LZAJWiZwjGIl4vKULvDT8K6nvReE6LA7RxeZFQ==
+cozy-jobs-cli@1.16.2:
+  version "1.16.2"
+  resolved "https://registry.yarnpkg.com/cozy-jobs-cli/-/cozy-jobs-cli-1.16.2.tgz#94ba68c47b3aaa997150ec7b306f980f63e03c73"
+  integrity sha512-oPlrt2bpuGf5dmEZ2bmSguSo6Jjs8z+XrJHT/oq3+6N1Qn/riPYLn8xl9w0teO8J1chMkapnyWGwnO+F5VH90g==
   dependencies:
     "@pollyjs/adapter-node-http" "5.1.0"
     "@pollyjs/core" "5.1.0"
     "@pollyjs/persister-fs" "5.0.0"
     babel-runtime "6.26.0"
+    btoa "^1.2.1"
     cheerio "1.0.0-rc.9"
     cli-highlight "2.1.11"
     commander "7.2.0"
     cozy-client "23.4.0"
-    cozy-konnector-libs "^4.42.1"
+    cozy-konnector-libs "^4.42.2"
     cozy-logger "1.7.0"
     open "8.2.0"
     pretty "2.0.0"
     strip-json-comments "3.1.1"
 
-cozy-konnector-build@1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/cozy-konnector-build/-/cozy-konnector-build-1.2.1.tgz#ebeb242bdd71219731dd8cf9eda6c03031ae09bd"
-  integrity sha512-OYxdh7VVd4Q3GAQLZAaWVnKhvuBBLDF/2M6M/R/AXWfMcyZRTZtqCs87STigYNme9/ZC0NToln5gh+C/Ynoitg==
+cozy-konnector-build@1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/cozy-konnector-build/-/cozy-konnector-build-1.2.2.tgz#37abc3b64fa2db545785831ad464466089386640"
+  integrity sha512-qLOtqigecylr877sBqggiv2upDRigx1cCtMYxyrTSzwoIZJysvOSpbblBks0vWUIwcDss+GcGoKQwQXPbLUAqA==
   dependencies:
     copy-webpack-plugin "9.0.0"
     cozy-app-publish "0.27.0"
@@ -1286,36 +1298,7 @@ cozy-konnector-build@1.2.1:
     webpack "5.38.1"
     webpack-cli "4.7.0"
 
-cozy-konnector-libs@4.42.1:
-  version "4.42.1"
-  resolved "https://registry.yarnpkg.com/cozy-konnector-libs/-/cozy-konnector-libs-4.42.1.tgz#719ef582cb96def587458e84957e2a5a61e761a7"
-  integrity sha512-T6bHP0W9Apy7P2yxaFQOsQDiaSYFHrmaapj+4PIoiMUVJxuvRIBfcOu3ddUFK0GMRYYdohBCZNvD3dXj656Stw==
-  dependencies:
-    babel-runtime "^6.26.0"
-    bluebird "^3.7.2"
-    bluebird-retry "^0.11.0"
-    btoa "1.2.1"
-    cheerio "^1.0.0-rc.9"
-    classificator "^0.3.3"
-    cozy-client "^23.4.0"
-    cozy-client-js "^0.19.0"
-    cozy-doctypes "^1.82.2"
-    cozy-logger "^1.7.0"
-    date-fns "^2.22.1"
-    file-type "^16.5.0"
-    geco "^0.11.1"
-    lodash-id "^0.14.0"
-    lowdb "^1.0.0"
-    mime-types "^2.1.31"
-    node-fetch "^2.6.1"
-    raven "^2.6.4"
-    raw-body "^2.4.1"
-    request "^2.88.2"
-    request-debug "^0.2.0"
-    request-promise "^4.2.6"
-    strip-json-comments "^3.1.1"
-
-cozy-konnector-libs@^4.42.1:
+cozy-konnector-libs@4.42.2, cozy-konnector-libs@^4.42.2:
   version "4.42.2"
   resolved "https://registry.yarnpkg.com/cozy-konnector-libs/-/cozy-konnector-libs-4.42.2.tgz#f620cd7e9f657a54c8e2b68c1a06d4bbc56f0567"
   integrity sha512-1QXTfxS1aQribnaGj73vNOG6JTP64gQJ/4cc63kpbJuY3WqM7LEWfacWrzRU6rHsJmlhSFMMg7WW1f3/jP58fg==
