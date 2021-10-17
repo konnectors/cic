@@ -216,7 +216,7 @@ async function twoFactorAuthentication($) {
     'a[href="/' + BankUrl.get('authConfirmIdentity') + '"]'
   )
 
-  if (askConfirmIdentity.length) {
+  if (askConfirmIdentity && askConfirmIdentity.length) {
     log('info', 'The website asks to confirm the identity')
     // eslint-disable-next-line require-atomic-updates
     $ = await confirmIdentify()
@@ -252,7 +252,7 @@ async function twoFactorAuthentication($) {
 
   let matches = regex.exec(textScripts)
 
-  if (matches.length < 1) {
+  if (!matches || matches.length < 1) {
     // transactionId not found
     return false
   }
