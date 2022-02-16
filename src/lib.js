@@ -19,12 +19,8 @@ const helpers = require('./helpers')
 const BankUrl = require('./urlBuilder')
 
 const doctypes = require('cozy-doctypes')
-const {
-  BankAccount,
-  BankTransaction,
-  BalanceHistory,
-  BankingReconciliator
-} = doctypes
+const { BankAccount, BankTransaction, BalanceHistory, BankingReconciliator } =
+  doctypes
 
 BankAccount.registerClient(cozyClient)
 BalanceHistory.registerClient(cozyClient)
@@ -268,7 +264,7 @@ async function twoFactorAuthentication($) {
     )
 
     // Wait 5 seconds
-    await new Promise(done => setTimeout(done, timeout))
+    await new Promise(resolve => setTimeout(resolve, timeout))
     timeout = 5000 // For the next try, wait just 5 seconds
 
     let authenticated = await request({
@@ -278,7 +274,7 @@ async function twoFactorAuthentication($) {
         transactionId: transactionID
       },
       transform: body => cheerio.load(body)
-    }).then(async function($) {
+    }).then(async function ($) {
       let transactionState = $('transactionState').text()
       log('info', 'Status of 2FA challenge : ' + transactionState)
 
@@ -311,7 +307,7 @@ function validationOTP(urlOTPValidation, fields) {
     let uri = fullResponse.request.uri
 
     // Add query part (uri.search) from uri to check the target page and avoid false negative
-    if (uri.href !== (BankUrl.get('home') + uri.search) ) {
+    if (uri.href !== BankUrl.get('home') + uri.search) {
       // If the URI is different to urlHome, that means there is probably a user action
       throw new Error(errors.USER_ACTION_NEEDED)
     }
@@ -325,7 +321,7 @@ async function confirmIdentify() {
     uri: BankUrl.get('authConfirmIdentity'),
     method: 'GET',
     transform: body => cheerio.load(body)
-  }).then(function($) {
+  }).then(function ($) {
     return $
   })
 }
@@ -609,7 +605,7 @@ function saveBalances(balances) {
 
 // ===== Export ======
 
-String.prototype.replaceAll = function(search, replacement) {
+String.prototype.replaceAll = function (search, replacement) {
   var target = this
   return target.replace(new RegExp(search, 'g'), replacement)
 }
