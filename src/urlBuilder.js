@@ -10,7 +10,7 @@ const paths = {
   auth2FA: basePathAuth,
   authOTP: `otp/SOSD_OTP_GetTransactionState.htm`,
   authConfirmIdentity: `${basePathAuth}?_tabi=C&_pid=AuthChoicePage&_fid=SCA`,
-  xlsxDownload: `banque/compte/routetelechargement.asp?formatTelechargement=XL&compte=all`
+  xlsxDownload: `banque/compte/routetelechargement.asp?formatTelechargement=XL&sdsf_accountselection=all`
 }
 
 class URLBuilder {

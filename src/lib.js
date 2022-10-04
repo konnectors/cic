@@ -461,7 +461,16 @@ function parseOperations(account, operationLines) {
   const operations = operationLines
     .slice(5, operationLines.length - 3)
     .filter(line => {
-      return line.length > 5 // avoid lines with empty cells
+      if (line.length <= 6) {
+        // avoid lines with empty cells
+        return false
+      }
+
+      const cells = line.split(';')
+      const date = helpers.parseDate(cells[0])
+
+      return date.isValid() // avoid lines without a valid date
+
     })
     .map(line => {
       const cells = line.split(';')
