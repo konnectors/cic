@@ -49,7 +49,7 @@
     "cozy-doctypes": "1.85.4",
     "cozy-konnector-libs": "4.55.0",
     "moment": "2.29.4",
-    "xlsx": "0.18.2"
+    "xlsx": "0.18.5"
   },
   "devDependencies": {
     "cozy-jobs-cli": "1.19.2",
