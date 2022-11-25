@@ -13,7 +13,6 @@
   ],
   "author": "Simon Delberghe",
   "license": "AGPL-3.0",
-  "main": "./src/index.js",
   "homepage": "https://github.com/konnectors/cic#readme",
   "bugs": {
     "url": "https://github.com/konnectors/cic/issues"
